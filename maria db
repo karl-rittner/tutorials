@@ -1,0 +1,5 @@
+
+apt install mariadb-server
+systemctl status mariadb.service
+-- systemctl start mariadb.service
+-- systemctl enable mariadb.service
