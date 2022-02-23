@@ -1,1 +1,4 @@
 
+insert into ... (col1, col2) values (1, "string");
+
+update ... set col1= col1 + 2, col2="newString" where col1=1;
