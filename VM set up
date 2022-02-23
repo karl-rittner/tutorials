@@ -7,13 +7,15 @@ Overview:
 
 
 
-1. go to the settings of the VM - look for network settings or network adapter
-   select Bridge
+1. 
+go to the settings of the VM - look for network settings or network adapter
+select Bridge
 
 
 
-2.  open terminal within VM - 
-      vim /etc/network/interfaces 
+2.  
+open terminal within VM - 
+vim /etc/network/interfaces 
 
 Use following Template - make changes if needed (enp0s3 could different as well as gateway netmask and address)
 
@@ -35,11 +37,13 @@ ____________________________________________
 
 
 
-3. systemctl restart networking.services
+3. 
+systemctl restart networking.services
 
 
 
-4. vim /etc/apt/sources.list
+4. 
+vim /etc/apt/sources.list
 
 # comment out the cd !!!!!!!!!!!!!!!!!!!!!
 
