@@ -1,1 +1,15 @@
+MYSQL:
 
+create user 'myuser'@'%' identified by 'password';  -- from any ip
+create user 'admin'@'localhost' identified by 'password';
+
+drop user 'myuser';
+
+select * from mysql.user;
+
+grant all on ... to myuser with grant option; -- with grant option : das recht rechte zu vergeben.
+grant all on *.* to myuser; -- alle datenbanken und derent tabellen
+grant all on datenbank.* to myuser; -- eine datenbank und deren tabellen
+grant select, update, delete, execute, update, insert on ... to myuser;
+
+revoke all on ... to myuser cascade;
