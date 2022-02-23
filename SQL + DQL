@@ -1,1 +1,17 @@
 
+select from ... as t1
+inner join ... as t2
+  on t1.col1 = t2.col1
+where t1.col1 between 1 and 12;
+
+group by t2.col1  having t1.col1 between 1 and 2;
+
+like "%...%"  _ for single
+is null
+and
+or
+in(...)
+>
+<
+= ist gleich
+<> - ungleich
