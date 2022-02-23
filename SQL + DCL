@@ -13,3 +13,4 @@ grant all on datenbank.* to myuser; -- eine datenbank und deren tabellen
 grant select, update, delete, execute, update, insert on ... to myuser;
 
 revoke all on ... to myuser cascade;
+
