@@ -13,3 +13,4 @@ DO:
 	remove test database yes
 	reload priviliege tables yes
 
+mysql -u user -p
