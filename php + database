@@ -1,3 +1,33 @@
+iterate over result 
+-----------------------------------------------------------------------------
+
+<?php 
+
+  $result = $db_manager->get_all_news();
+
+  if ($result->num_rows > 0) 
+  {
+    // output data of each row
+      while($row = $result->fetch_assoc()) 
+      {
+          echo "<br>" . $row["schlagzeile"] . "<br><br>" . $row["text"]. "<br>Artikel: " . 
+               $row["position"] . " Erstellt von: " . $row["ersteller_id"] . "<br><br>";
+      }
+  } 
+  else 
+  {
+      echo "We Have No News Right Now, Check Back Later";
+  }
+
+
+  #$conn->set_news( "Sale Is Over.", "Our Sale Finished Today, but no worries we still have the best prices in town!", 1, 10020);
+
+?>
+
+
+
+init db_manager
+------------------------------------------------------------------------
 <?php
 
 $path_lib = "lib/";
@@ -15,6 +45,11 @@ $schema = "school";
 $db_manager = new db($servername, $username, $password, $schema, $debug);
 
 ?>
+
+
+
+
+db_manager template class
 --------------------------------------------------------------------------------
 <?php
 
@@ -41,9 +76,9 @@ class db
         }
     }
 
-    public function get_all_news()
+    public function get_all_from($table)
     {
-        $sql = "SELECT * FROM $this->schema.News ORDER BY position DESC ;";
+        $sql = "SELECT * FROM $this->schema.$table;";
 
         $result = $this->conn->query($sql);
 
