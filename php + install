@@ -1,0 +1,1 @@
+apt-get install php libapache2-mod-php php-cli php-mysql php-zip php-curl php-xml -y
