@@ -1,5 +1,7 @@
 MYSQL:
 
+FLUSH PRIVILEGES;
+
 create user 'myuser'@'%' identified by 'password';  -- from any ip
 create user 'admin'@'localhost' identified by 'password';
 
