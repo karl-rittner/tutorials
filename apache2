@@ -5,22 +5,58 @@ systemctl status apache2
 -- systemctl enable apache2
 
 
-nano /etc/apache2/sites-available/example.com.conf
+
+
+
+
+
+
+
+
+
+
+
+
+not needed probably
+
+vi /etc/apache2/sites-enabled/000-default.conf
 
 -------------------------------------------
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
-    ServerName example.com
-    DocumentRoot /var/www/html/example.com
+    #ServerName example.com
+    DocumentRoot /var/www/html/
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ------------------------------------------------
 
-
-a2ensite example.com.conf
-a2dissite 000-default
 apache2ctl configtest
 
 systemctl reload apache2
 systemctl status apache2
+
+
+
+most likely not needed
+------------------------------------- SSL
+
+vi /etc/apache2/sites-enabled/000-default.conf
+--------------------------------------------
+<VirtualHost *:443>
+ServerName (DOMAIN NAME OF THE WEBSITE)
+DocumentRoot (ROOT FOLDER OF THE WEBSITE)
+
+
+SSLEngine on
+SSLCertificateFile (Certificate PATH)
+SSLCertificateKeyFile (Private key PATH)
+SSLCertificateChainFile (CA Bundle PATH)
+</VirtualHost>
+---------------------------------------------
+
+a2enmod ssl
+systemctl restart apache2
+
+
+
