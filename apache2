@@ -4,3 +4,23 @@ systemctl status apache2
 -- systemctl start apache2
 -- systemctl enable apache2
 
+
+nano /etc/apache2/sites-available/example.com.conf
+
+-------------------------------------------
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName example.com
+    DocumentRoot /var/www/html/example.com
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+------------------------------------------------
+
+
+a2ensite example.com.conf
+a2dissite 000-default
+apache2ctl configtest
+
+systemctl reload apache2
+systemctl status apache2
