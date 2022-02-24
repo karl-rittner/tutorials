@@ -1,0 +1,13 @@
+<?php 
+
+session_start();
+$_SESSION["email"] = "";
+$_SESSION["user_id"] = 0;
+$_SESSION["is_admin"] = 0;
+$_SESSION["is_worker"] = 0;
+$_SESSION["is_user"] = 0;
+
+header("Location: https://$ip/index.php");
+exit();
+
+?>
