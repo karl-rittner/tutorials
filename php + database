@@ -1,1 +1,90 @@
+<?php
 
+$path_lib = "lib/";
+$full_path_lib = $path_techup . $path_lib;
+$full_path_db_manager = $full_path_lib . "db_manager.php";
+
+require $full_path_db_manager;
+
+$debug = true;
+$servername = "127.0.0.1";
+$username = "root";
+$password = "root";
+$schema = "school";
+
+$db_manager = new db($servername, $username, $password, $schema, $debug);
+
+?>
+--------------------------------------------------------------------------------
+<?php
+
+class db
+{
+    private $conn;
+    private $schema;
+
+    function __construct($servername, $username, $password, $schema, $debug)
+    {
+        $this->schema = $schema;
+        // Create connection
+        $this->conn = new mysqli($servername, $username, $password);
+
+        if ($this->conn->connect_error) 
+        {
+            if ($debug) 
+            {
+                die("Connection failed: " . $this->conn->connect_error);
+            }
+            else {
+            die("Wir sind gerade am Updaten unserer Software. Bitte versuchen Sie erneut.");
+            }
+        }
+    }
+
+    public function get_all_news()
+    {
+        $sql = "SELECT * FROM $this->schema.News ORDER BY position DESC ;";
+
+        $result = $this->conn->query($sql);
+
+        return $result;
+    }
+
+    public function set_news($header, $text, $user, $position, $image=null, $visible=1)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+        $user_id = 1;
+
+        $sql = "INSERT INTO $this->schema.News
+                    (text, position, ersteller_id, sichtbar, schlagzeile, bild) 
+                        VALUES
+                    ('$text', '$position', '$user_id', '$visible', '$header', '$image')
+                    ;";
+                    echo $sql;
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "New record created successfully";
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    public function get_user($email, $password)
+    {
+        $checker = new io();
+        $email = $checker->secure_input($email);
+        $password = $checker->secure_input($password);
+        unset($checker);
+
+        $sql = "SELECT * FROM $this->schema.Personen WHERE email='$email' AND passwort='$password';";
+        echo $sql;
+        $result = $this->conn->query($sql);
+
+        return $result;
+    }
+
+}
+
+?>
