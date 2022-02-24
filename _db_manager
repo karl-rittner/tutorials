@@ -1,0 +1,653 @@
+<?php
+
+class database_manager
+{
+    private $conn;
+    private $schema;
+
+    function __construct($servername, $username, $password, $schema, $debug)
+    {
+        $this->schema = $schema;
+        // Create connection
+        $this->conn = new mysqli($servername, $username, $password);
+
+        if ($this->conn->connect_error) 
+        {
+            if ($debug) 
+            {
+                die("Connection failed: " . $this->conn->connect_error);
+            }
+            else {
+            die("Wir sind gerade am Updaten unserer Software. Bitte versuchen Sie erneut.");
+            }
+        }
+    }
+
+    public function close()
+    {
+        mysqli_close($this->conn);        
+    }
+
+    public function get_all_news()
+    {
+       $sql = "SELECT 
+                    n.text, n.bild, n.ersteller_id, n.position, n.schlagzeile, p.vorname, p.nachname
+               FROM
+                    $this->schema.News n
+               INNER JOIN
+                    $this->schema.Personen p
+                ON
+                    p.id = n.ersteller_id
+               ORDER BY 
+                    position DESC ;";
+
+       $result = $this->conn->query($sql);
+
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) {
+            $result = 1;
+        }
+
+        return $result;
+    }
+
+    public function get_highest_news_position()
+    {
+        $sql = "SELECT position FROM $this->schema.News ORDER BY position DESC LIMIT 1 ;";
+
+        $result = $this->conn->query($sql);
+
+        if (mysqli_num_rows($result)== 0) {
+            return -1;
+        }
+
+        while($row = $result->fetch_assoc()) 
+        {
+            return $row['position'];
+        }
+
+        return 0;
+    }
+
+    public function add_artikel($artikel_nr, $beschreibung, $name, $lagerbestand, $kategorie, $preis)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+
+        $sql = "INSERT INTO $this->schema.Artikel
+                    (artikel_nr, beschreibung, name, lagerbestand, kategorie, preis) 
+                        VALUES
+                    ('$artikel_nr', '$beschreibung', '$name', '$lagerbestand', '$kategorie', '$preis')
+                    ;";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "Neues Produkt wurde erfolgreich erstellt!";
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    public function add_kategorie($kategorie)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+
+        $sql = "INSERT INTO $this->schema.Kategorie
+                    (bezeichnung) 
+                        VALUES
+                    ('$kategorie')
+                    ;";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "Neue Produkt Kategorie wurde erfolgreich erstellt!";
+        } 
+        else 
+        {
+        }
+    }
+
+    public function set_news($header, $text, $user, $position, $image=null, $visible=1)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+
+        $sql = "INSERT INTO $this->schema.News
+                    (text, position, ersteller_id, sichtbar, schlagzeile, bild) 
+                        VALUES
+                    ('$text', '$position', '$user', '$visible', '$header', '$image')
+                    ;";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "Neuer Artikel wurde erfolgreich erstellt!";
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    public function reset_password($user_id)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+
+        #$sql = "INSERT INTO $this->schema.News
+        #            (text, position, ersteller_id, sichtbar, schlagzeile, bild) 
+        #                VALUES
+        #            ('$text', '$position', '$user', '$visible', '$header', '$image')
+        #            ;";
+
+       # if ($this->conn->query($sql) === TRUE) 
+       # {
+       #     echo "Neuer Artikel wurde erfolgreich erstellt!";
+       # } 
+       # else 
+       # {
+       #     echo "Error: " . $sql . "<br>" . $this->conn->error;
+       # }
+    }
+
+    public function update_benutzer($ist_mitarbeiter, $ist_kunde, $ist_admin, $user_id)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+
+        $sql = "UPDATE $this->schema.Personen SET
+                   ist_mitarbeiter=$ist_mitarbeiter , ist_kunde=$ist_kunde, ist_admin=$ist_admin
+                WHERE
+                    id=$user_id
+                 ;";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "Benutzerrechte wurden erfolgreich upgedated!";
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    public function delete_user($id)
+    { # create a new article image needs image name, visable needs number 0 or 1.
+
+        $sql = "DELETE FROM $this->schema.Personen WHERE id=$id;";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "User mit ID: $id wurde geloescht!";
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+    }
+
+    public function get_user($email, $password)
+    {
+        $email = io_manager::secure_input($email);
+        $password = io_manager::secure_password($password);
+
+        $sql = "SELECT * FROM $this->schema.Personen WHERE email='$email' AND passwort='$password';";
+        
+        $result = $this->conn->query($sql);
+
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) {
+            $result = -1;
+        }
+
+        return $result;
+    }
+
+    public function get_all_users()
+    {
+
+        $sql = "SELECT * FROM $this->schema.Personen ;";
+        
+        $result = $this->conn->query($sql);
+
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) {
+            $result = -1;
+        }
+
+        return $result;
+    }
+
+    public function set_user($vorname, $nachname, $email, $password,
+                             $strasse, $ort, $zip, $land, $staat)
+    {
+        $email = io_manager::secure_input($email);
+
+        $sql = "SELECT * FROM $this->schema.Personen WHERE email='$email' ;";
+        
+        $result = $this->conn->query($sql);
+
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount > 0) 
+        {
+            echo 'Email Adresse schon in Verwendung! ';
+            $result = -1;
+        }
+        else
+        {
+            $password = io_manager::secure_password($password);
+            $vorname = io_manager::secure_input($vorname);
+            $nachname = io_manager::secure_input($nachname);
+            $strasse = io_manager::secure_input($strasse);
+            $ort = io_manager::secure_input($ort);
+            $zip = io_manager::secure_input($zip);
+            $land = io_manager::secure_input($land);
+            $staat = io_manager::secure_input($staat);
+    
+            $this->conn->autocommit(FALSE);
+    
+            $sql_address = "
+                    INSERT INTO $this->schema.Adresse
+                        (strasse, ort, zip, land, staat)
+                    VALUES
+                        ('$strasse', '$ort', '$zip', '$land', '$staat');";
+    
+            $this->conn->query($sql_address);
+            $last_insert_id = $this->conn->insert_id;
+    
+            $sql_person = "               
+                    INSERT INTO $this->schema.Personen
+                        (email, passwort, vorname, nachname, adresse_id) 
+                    VALUES
+                        ('$email', '$password', '$vorname', '$nachname', '$last_insert_id');";
+            
+            $result = 1;
+    
+            $this->conn->query($sql_person);
+    
+            if (!$this->conn->commit()) 
+            {           
+                echo 'Interner Fehler, versuchen Sie es nochmal! ';
+                $result = -1;
+                $this->conn->rollback();
+            } 
+
+            $this->conn->autocommit(TRUE);
+        }
+
+        return $result;
+    }
+
+    public function get_artikels()
+    {
+        $sql = "
+            SELECT 
+                a.artikel_nr, a.name, a.beschreibung, a.lagerbestand, a.preis 
+            FROM
+                techup.Artikel a
+            WHERE
+                a.lagerbestand > 0;
+        ";
+
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;        
+    }
+
+    public function get_specific_artikels($category)
+    {
+        $sql = "
+            SELECT 
+                a.artikel_nr, a.name, a.beschreibung, a.lagerbestand, a.preis 
+            FROM
+                techup.Artikel a
+            WHERE
+                a.lagerbestand > 0
+            AND
+                a.kategorie = '$category'
+                ;
+        ";
+        
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;        
+    }
+
+     public function get_all_categories()
+    {
+        $sql = "
+            SELECT 
+                bezeichnung
+            FROM
+                techup.Kategorie 
+                ;
+        ";
+
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;        
+    }
+
+
+    public function set_new_order($artikel_nr, $anzahl, $kunden_id)
+    {
+
+        $sql = "CALL techup.set_new_order($kunden_id, $artikel_nr, $anzahl);";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo 'Ihre Bestellung ( Artikel Nummner:' . $artikel_nr . ' - ' . $anzahl . ' Stueck) wurde dem Warenkorb hinzugefuegt.';
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+        }
+
+    }
+
+    public function get_user_warenkorb($kunden_id)
+    {
+        $sql = "
+            SELECT 
+                gb.bestell_nr,
+                gb.ist_bezahlt,
+                gb.total,
+                b.stueckzahl,
+                b.gesamt_preis AS artikel_gesamt_preis,
+                a.artikel_nr,
+                a.name,
+                a.preis,
+                a.lagerbestand
+            FROM
+                techup.Gesamt_bestellung AS gb
+            INNER JOIN
+                techup.Bestellung AS b
+            ON
+                b.bestell_nr = gb.bestell_nr
+            INNER JOIN
+                techup.Artikel AS a
+            ON
+                b.artikel_id = a.id
+            WHERE
+                gb.ist_bezahlt = 0
+                    AND
+                gb.personen_id = $kunden_id;
+            ";
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;        
+    }
+
+    public function set_invoice_as_paid($bestell_nr, $kunden_id)
+    {
+        
+        $result = $this->get_user_warenkorb($kunden_id);
+
+        $this->conn->autocommit(FALSE);
+
+        if ($result == -1) 
+        {
+            echo 'Interner Fehler, versuchen Sie es nochmal!';
+            $this->conn->rollback();
+            $this->conn->autocommit(TRUE);
+            return -1;
+        }
+        
+        while($row = $result->fetch_assoc()) 
+        {
+            $stueckzahl = $row["stueckzahl"];
+            $artikel_nr = $row["artikel_nr"];
+            $alagerbestand = $row["lagerbestand"];
+                
+            $lagerbestand = $alagerbestand - $stueckzahl;
+            
+            if ($lagerbestand < 0) 
+            {
+                $this->conn->rollback();
+                $this->conn->autocommit(TRUE);
+                echo "Artikel: $artikel_nr - Nur noch $alagerbestand Stueck auf Lager! Bestellung abgebrochen.";
+                return -1;
+            }
+            $sql = "
+                UPDATE techup.Artikel SET lagerbestand=$lagerbestand WHERE artikel_nr=$artikel_nr;
+            ";
+            
+            if ($this->conn->query($sql) === TRUE) 
+            {
+                echo "Danke fuer Ihre Zahlung!";
+            } 
+            else 
+            {
+                echo "Error: " . $sql . "<br>" . $this->conn->error;
+                $this->conn->rollback();
+                $this->conn->autocommit(TRUE);
+                return -1;
+            }  
+
+        }
+        
+        $sql = "
+          UPDATE 
+            techup.Gesamt_bestellung 
+          SET 
+            ist_bezahlt=1
+          WHERE 
+            bestell_nr=$bestell_nr;
+        ";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            echo "Danke fuer Ihre Zahlung!";
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+            $this->conn->rollback();
+            $this->conn->autocommit(TRUE);
+            return -1;
+        } 
+
+
+        if (!$this->conn->commit()) 
+        {           
+            echo 'Interner Fehler, versuchen Sie es nochmal!! ';
+            $this->conn->rollback();
+            $this->conn->autocommit(TRUE);
+            return -1;
+        }
+        $this->conn->autocommit(TRUE);
+        return 0;
+    }
+
+    public function get_user_invoices($kunden_id)
+    {
+        $sql = "
+            SELECT 
+                gb.bestell_nr,
+                gb.ist_bezahlt,
+                gb.total,
+                b.stueckzahl,
+                b.gesamt_preis AS artikel_gesamt_preis,
+                a.artikel_nr,
+                a.name,
+                a.preis,
+                a.lagerbestand
+            FROM
+                techup.Gesamt_bestellung AS gb
+            INNER JOIN
+                techup.Bestellung AS b
+            ON
+                b.bestell_nr = gb.bestell_nr
+            INNER JOIN
+                techup.Artikel AS a
+            ON
+                b.artikel_id = a.id
+            WHERE
+                gb.personen_id = $kunden_id;
+            ";
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;   
+    }
+
+    public function get_user_paid_invoices($kunden_id)
+    {
+        $sql = "
+            SELECT 
+                gb.bestell_nr,
+                gb.ist_bezahlt,
+                gb.total,
+                b.stueckzahl,
+                b.gesamt_preis AS artikel_gesamt_preis,
+                a.artikel_nr,
+                a.name,
+                a.preis,
+                a.lagerbestand
+            FROM
+                techup.Gesamt_bestellung AS gb
+            INNER JOIN
+                techup.Bestellung AS b
+            ON
+                b.bestell_nr = gb.bestell_nr
+            INNER JOIN
+                techup.Artikel AS a
+            ON
+                b.artikel_id = a.id
+            WHERE
+                gb.personen_id = $kunden_id
+                    AND
+                gb.ist_bezahlt = '1';
+            ";
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;   
+    }
+
+    public function get_user_specific_invoice($kunden_id, $bestell_nr)
+    {
+        $sql = "
+            SELECT 
+                gb.bestell_nr,
+                gb.ist_bezahlt,
+                gb.total,
+                b.stueckzahl,
+                b.gesamt_preis AS artikel_gesamt_preis,
+                a.artikel_nr,
+                a.name,
+                a.preis,
+                a.lagerbestand
+            FROM
+                techup.Gesamt_bestellung AS gb
+            INNER JOIN
+                techup.Bestellung AS b
+            ON
+                b.bestell_nr = gb.bestell_nr
+            INNER JOIN
+                techup.Artikel AS a
+            ON
+                b.artikel_id = a.id
+            WHERE
+                gb.personen_id = $kunden_id
+                    AND
+                gb.bestell_nr = $bestell_nr;
+            ";
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;   
+    }
+
+    public function get_user_adress($kunden_id)
+    {
+        $sql = "
+            SELECT
+                p.vorname, p.nachname, p.email, 
+                a.strasse, a.ort, a.zip, a.land, a.staat 
+            FROM
+                techup.Personen AS p
+            INNER JOIN
+                techup.Adresse AS a
+            ON
+                a.id=p.adresse_id
+            WHERE
+                p.id = $kunden_id;
+        ";
+
+
+        $result = $this->conn->query($sql);
+    
+        $rowcount=mysqli_num_rows($result);
+        if ($rowcount == 0) 
+        {
+            return -1;
+        }
+
+        return $result;       
+    }
+    
+    public function set_user_question($name, $email, $question)
+    {
+
+        $name = io_manager::secure_input($name);
+        $email = io_manager::secure_password($email);
+        $question = io_manager::secure_password($question);
+
+        $sql = "INSERT INTO $this->schema.Kunden_Nachrichten
+                    ( name, email, text, ist_beantwortet) 
+                        VALUES
+                    ('$name', '$email', '$question', 0)
+                    ;";
+
+        if ($this->conn->query($sql) === TRUE) 
+        {
+            return 1;
+        } 
+        else 
+        {
+            echo "Error: " . $sql . "<br>" . $this->conn->error;
+            return -1;
+        }
+    }
+
+}
+?>
