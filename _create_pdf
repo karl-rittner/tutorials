@@ -1,0 +1,168 @@
+<?php
+
+# import tcpdf which will be used to create pdfs
+require_once('/var/www/html/techupp/lib/tcpdf/tcpdf.php');
+
+function create_pdf($db_manager, $bestell_nr, $kunden_id, $company_name, $path_techup)
+{
+    # get all the information needed to create the invoice
+    $customer_info = $db_manager->get_user_adress($kunden_id);
+
+    # check if error happened during customer info fetch
+    if ($customer_info == -1) 
+    {
+        echo 'Bitte versuchen Sie spaeter nochmal!';
+    }
+    
+    else
+    {
+
+        $vorname = ''; $nachname = ''; $email = ''; $strasse = ''; $ort = ''; $zip = ''; $land = ''; $staat = '';
+
+        # set customer information related variables 
+        while($row = $customer_info->fetch_assoc()) 
+        {
+            $vorname = $row['vorname'];
+            $nachname = $row['nachname'];
+            $email = $row['email'];
+            $strasse = $row['strasse'];
+            $ort = $row['ort'];
+            $zip = $row['zip'];
+            $land = $row['land'];
+            $staat = $row['staat'];
+        }
+   
+        $user_invoice = $db_manager->get_user_specific_invoice($kunden_id, $bestell_nr);
+
+        # check if error happened during invoice information fetch
+        if ($user_invoice == -1) 
+        {
+            echo 'Bitte versuchen Sie spaeter nochmal!!';
+        }
+        else 
+        {
+        
+            $artikel_tabelle_html = '';
+            
+            # for each article create the html which should be displayed to showcase the article, quantity and its price
+            while($row = $user_invoice->fetch_assoc()) 
+            {
+                $name = $row['name'];
+                $anzahl = $row['stueckzahl'];
+                $preis = $row['preis'];
+                $total = $row['artikel_gesamt_preis'];
+                $gesamttotal = $row['total'];
+                $bestell_nr = $row['bestell_nr'];
+    
+                $artikel_tabelle_html .=
+                '<tr>
+                    <td>' . $name . '</td>
+                    <td style="text-align: center;">' . $anzahl . '</td>		
+                    <td style="text-align: center;">' . $preis . ' USD</td>	
+                    <td style="text-align: center;">' . $total . ' USD</td>
+                </tr>';
+            }
+        
+            # set name which the pdf should be saved with
+            $pdf_save_to = $bestell_nr . ".pdf";
+    
+            # set order date
+            $date = date("d.m.Y");
+
+            # create the html which will be used to create the pdf
+            $adress = "
+                $vorname $nachname <br>
+                $strasse <br>
+                $zip $ort <br>
+                $land <br>
+                $staat <br>
+                $email <br>
+                ";
+    
+            $html = ' 
+                <table  cellspacing="0" style="width: 100%; cellpadding="4" ">
+                    <tr>
+    
+                        <td>
+                            ' . $company_name . '
+                        </td>
+    
+                        <td style="text-align: right">
+                            Bestellung: '.$bestell_nr.'<br>
+                            Datum: '.$date.'<br>
+                        </td>
+    
+                    </tr>
+    
+                    <br><br>
+    
+                    <tr>
+                        <td colspan="2">' . $adress . '</td>
+                    </tr>
+                </table>
+    
+                <br><br>
+    
+                <table style="width: 100%;" cellpadding="4" border="0" cellspacing="0">
+                    <tr style="padding:4px;">
+    
+                        <td style="padding:5px;"> Artikel </td>
+                        <td style="text-align:center;"> Anzahl </td>
+                        <td style="text-align:center;"> Einzeltotal </td>
+                        <td style="text-align:center;"> Gesamttotal </td>
+    
+                    </tr>';
+    
+    
+                    $html .= $artikel_tabelle_html;
+    
+                    $html .=
+                '</table>
+        
+                <hr>
+                <table cellpadding="5" cellspacing="0" style="width: 100%;" border="0">
+    
+                    <tr>
+                        <td>Ust.: ' . $gesamttotal*0.20 . ' USD</td>
+                        <td colspan="3">Gesamtsumme inkl. Ust.: </td>
+                        <td style="text-align: center;">
+                            ' . $gesamttotal . ' USD
+                        </td>
+    
+                    </tr>		
+    
+                </table>';
+
+            # create new instance of the pdf ceator
+            $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+            
+            # let the creator know we want to create a pdf
+            $pdf->SetCreator(PDF_CREATOR);
+    
+            # set the author of the pdf
+            $pdf->SetAuthor($company_name);
+    
+            # set the title of the pdf
+            $pdf->SetTitle('Invoice '.$bestell_nr);
+    
+            # set the subject of the pdf
+            $pdf->SetSubject('Invoice '.$bestell_nr);
+    
+            $pdf->AddPage();
+            
+            # give all necessary information to the creator- html - ln=false, fill=true, reset=false, align=""
+            $pdf->writeHTML($html, true, false, true, false, '');
+    
+            # let the creatore save the pdf to specified path
+            $pdf->Output( $path_techup . '/invoices/' . $pdf_save_to, 'F');
+    
+            # display that the file was ceated and link a download path
+            echo ' <p style="margin: 10px 10px 10px 10px;">
+                        PDF Rechnung herunterladen: 
+                        <a  href="/invoices/' . $bestell_nr . '.pdf"> ' . $bestell_nr . '</a>
+                    </p>';
+        }
+    }
+}
+
+?>
