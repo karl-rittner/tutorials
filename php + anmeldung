@@ -1,0 +1,41 @@
+<?php 
+
+session_start();
+
+
+if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] > 0 ) 
+{
+    echo "<br><br>Willkommen $_SESSION[email]<br><br";
+}
+else if (isset($_POST["anmeldung"])) 
+{
+    $result = $db_manager->get_user($_POST["email"], $_POST["password"]);
+    var_dump($result);
+
+    while($row = $result->fetch_assoc()) 
+    {
+          echo "<br>" . $row["vorname"] . "<br><br>" . $row["nachname"];
+    }
+}
+else 
+{
+    $_SESSION["email"] = "";
+    $_SESSION["user_id"] = 0;
+    $_SESSION["is_admin"] = 0;
+    $_SESSION["is_worker"] = 0;
+    $_SESSION["is_user"] = 0;
+
+    echo '<br><br><form action="anmelden.php" method="post">
+
+            Email: <input type="text" name="email"><br>
+            Passwort: <input type="password" name="password"><br><br>
+
+            <input type="Submit" name="anmeldung" value="Anmelden">
+            <a href="https://' . $ip . $path_views_sign_up . '">Sign Up</a>
+        </form><br><br>';
+
+}
+
+?>
+
+
