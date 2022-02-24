@@ -1,0 +1,79 @@
+<?php
+
+session_start();
+
+# check if user is logged in
+if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] > 0 ) 
+{
+    echo "<br><br>Willkommen $_SESSION[email]<br><br
+           Sie sind schon Registriert!";
+}
+# check if register button was pressed
+else if (isset($_POST["registrieren"])) 
+{
+    # insert new user into database
+    $result = $db_manager->set_user( $_POST['vorname'], $_POST['nachname'], $_POST["email"], $_POST["password"], $_POST['strasse'],
+                                     $_POST['ort'], $_POST['zip'], $_POST['land'], $_POST['staat']);
+    # check if new user was succesfull inserted
+    if ($result == -1)
+    {
+        echo 'Registration fehlgeschlagen!';
+    }
+    else 
+    {
+        echo "<br><br>Registration war Erfolgreich! Bitte melden Sie sich nun an.";
+    }
+
+}
+# else display the form so the user can regiester
+else 
+{
+
+?>
+
+    <form action="registrieren.php" method="post" 
+        style="border:2px; border-style:solid; display:block; margin-left: auto; 
+                margin-right:auto; margin-top:1%; margin-bottom:1%; padding:25px; max-width:400px;" >
+        
+        <label for="vorname" > Vorname: </label>
+        <input type="text" name="vorname"  required style="margin-left: 15px;"><br>
+        <label for="nachname" > Nachname: </label>
+        <input type="text" name="nachname"  required style="margin-left: 2px;"><br>
+        <label for="email" > Email: </label>
+        <input type="email" name="email"  required style="margin-left: 39px;"><br>
+        <label for="password" > Passwort: </label>
+        <input type="password" name="password"  required style="margin-left: 15px;"><br>
+    
+        
+        <br>
+        
+    
+        <label for="strasse" > Straße: </label>
+        <input type="text" name="strasse" required style="margin-left: 31px;"><br>
+        <label for="ort" > Ort: </label>
+        <input type="text" name="ort" required style="margin-left: 53;"><br>
+        <label for="zip" > ZIP: </label>
+        <input type="number" min="1" name="zip" required style="margin-left: 53px;"><br>
+        <label for="land" > Land: </label>
+        <input type="text" name="land" required style="margin-left: 42px;"><br>
+        <label for="staat" > Staat: </label>
+        <input type="text" name="staat" required style="margin-left: 41px;"><br>
+        
+        <br>
+        
+        <input type="radio" name="agb" required>
+        <label for="signUp">Ich habe die Allgemeinen Geschäftsbedingungen gelesen und akzeptiere diese.</label><br>
+        
+        <br>
+        <br>
+        
+        <input type="Submit" name="registrieren" value="Registrieren">
+        <a style="margin-left: 30px;" href="https://techupp.xyz/views/header_menu/anmelden.php">Anmelden</a>
+
+    </form>
+
+<?php
+}
+?>
+
+
