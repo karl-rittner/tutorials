@@ -12,7 +12,7 @@ name_id integer not null auto_increment,
 ... text not null,
 other_id int,
 primary key (name_id),
-FOREIGN KEY (other_id) REFERENCES ...(other_id)
+constraint fk_other_id FOREIGN KEY (other_id) REFERENCES ...(other_id)
 constraint ... check(... > 1)
 );
 
